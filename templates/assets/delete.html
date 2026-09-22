@@ -1,0 +1,3 @@
+{% extends 'base.html' %}
+{% block title %}Excluir ativo | Inventário{% endblock %}
+{% block content %}<section class="panel confirm"><p class="eyebrow">Ação irreversível</p><h1>Excluir {{ asset.hostname }}?</h1><p>O registro será removido do inventário.</p><form method="post">{% csrf_token %}<a class="button button-light" href="{% url 'assets:detail' asset.pk %}">Cancelar</a><button class="button button-danger" type="submit">Confirmar exclusão</button></form></section>{% endblock %}

@@ -1,0 +1,24 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Inventário{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{% url 'assets:dashboard' %}"><span class="brand-mark">I</span><span>Inventário<span class="brand-muted"> / TI</span></span></a>
+    <div class="top-actions">
+      <span class="logged-user">{{ request.user.get_username }}</span>
+      <a class="button button-primary" href="{% url 'assets:create' %}">+ Novo ativo</a>
+      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="button button-light" type="submit">Sair</button></form>
+    </div>
+  </header>
+  <main class="container">
+    {% if messages %}{% for message in messages %}<div class="message">{{ message }}</div>{% endfor %}{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
