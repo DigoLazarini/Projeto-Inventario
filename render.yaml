@@ -3,7 +3,7 @@ services:
     name: inventario-web
     runtime: python
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate
-    startCommand: gunicorn inventario.wsgi:application
+    startCommand: gunicorn inventario.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_DEBUG
         value: "False"
@@ -12,4 +12,5 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: DJANGO_ALLOWED_HOSTS
-        value: ".onrender.com"
+        value: inventario-web.onrender.com
+
