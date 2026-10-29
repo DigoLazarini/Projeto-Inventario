@@ -1,0 +1,4 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Excluir hospedagem | Inventário{% endblock %}
+{% block content %}<link rel="stylesheet" href="{% static 'css/hosting.css' %}"><section class="panel confirm"><p class="eyebrow">Ação irreversível</p><h1>Excluir {{ service.domain }}?</h1><p>O cadastro de {{ service.provider }} será removido do inventário.</p><form method="post">{% csrf_token %}<a class="button button-light" href="{% url 'assets:hosting-detail' service.pk %}">Cancelar</a><button class="button button-danger" type="submit">Confirmar exclusão</button></form></section>{% endblock %}

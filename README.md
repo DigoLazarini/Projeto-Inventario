@@ -20,14 +20,14 @@ O campo `hostname` identifica cada ativo e é único. A coluna `NÚCLEO` represe
 ## Primeiro contato com o código
 
 1. Execute o projeto com SQLite usando o passo a passo abaixo.
-2. Abra `/` para o dashboard e `/admin/` para a administração do Django.
+2. Abra `/login/` e entre com uma conta Django; depois acesse o inventário em `/inventario/`.
 3. Leia `models.py` para entender os dados, depois `views.py` para acompanhar uma requisição.
 4. Altere o modelo somente quando a estrutura dos dados mudar; alterações de modelo exigem nova migration.
 5. Depois de qualquer alteração, rode `py manage.py check` antes de iniciar o servidor.
 
 Os comentários no código destacam decisões de negócio e pontos de configuração. Nomes simples e docstrings explicam a responsabilidade de cada parte sem repetir o que a própria linha já deixa claro.
 
-## Desenvolvimento rápido com SQLite
+## Desenvolvimento local com SQLite
 
 ```powershell
 py -m venv .venv
@@ -39,7 +39,17 @@ py manage.py migrate
 py manage.py runserver
 ```
 
+O banco local fica em `data/inventario.sqlite3`. A pasta é criada automaticamente e ignorada pelo Git. Para escolher outro arquivo, configure `SQLITE_PATH`.
+
 Acesse `http://127.0.0.1:8000/`.
+
+Na primeira execução, crie uma conta administrativa para entrar no sistema:
+
+```powershell
+py manage.py createsuperuser
+```
+
+Use essa conta em `/login/`. Usuários autenticados podem consultar os dados; criar, editar e excluir exige as permissões padrão de adicionar, alterar e excluir ativos ou hospedagens. Um administrador pode criar usuários e atribuir essas permissões em `/admin/`.
 
 ## PostgreSQL
 
@@ -63,11 +73,21 @@ py manage.py import_hostings "caminho\Base serviços de Hospedagens.xlsx"
 
 O importador encontra a linha de cabeçalho automaticamente, preserva textos como `Expirado` e valores não numéricos como `***`, e pode ser executado novamente para atualizar registros correspondentes.
 
+## Licenças Office
+
+A tabela `/licencas-office/` importa somente `VERSÃO`, `Key`, `EMPRESA` e `USUÁRIO` da aba `Licenças Office`; as demais colunas da planilha são ignoradas. Para importar ou sincronizar novas linhas:
+
+```powershell
+py manage.py import_office_licenses "caminho\Inventário de máquinas.xlsx"
+```
+
 ## Hospedagem gratuita
 
 O projeto está preparado para um serviço web Python e um PostgreSQL compatível com plano gratuito. O arquivo `render.yaml` contém o build e o comando de inicialização para o Render.
 
 No serviço web, configure `DATABASE_URL`, `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False` e `DJANGO_ALLOWED_HOSTS` com o domínio fornecido. O build instala as dependências, coleta os arquivos estáticos e executa as migrations. Planos gratuitos podem suspender a aplicação sem acessos e ter limites de armazenamento, tráfego ou duração; confirme os limites atuais do provedor antes de usar em produção.
+
+O deploy executa migrations, mas não importa as planilhas. Uma base de produção nova começa sem registros de equipamentos, hospedagens ou licenças; importe somente dados reais depois do deploy. O SQLite local, arquivos `.env` e planilhas não devem ser enviados ao repositório.
 
 Para criar o primeiro usuário após o deploy, execute no Shell do provedor:
 
