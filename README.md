@@ -83,9 +83,9 @@ py manage.py import_office_licenses "caminho\Inventário de máquinas.xlsx"
 
 ## Hospedagem gratuita
 
-O projeto está preparado para um serviço web Python e um PostgreSQL compatível com plano gratuito. O arquivo `render.yaml` contém o build e o comando de inicialização para o Render.
+O projeto está preparado para um serviço web Python e um banco PostgreSQL no Render. O arquivo `render.yaml` contém o build e o comando de inicialização.
 
-No serviço web, configure `DATABASE_URL`, `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False` e `DJANGO_ALLOWED_HOSTS` com o domínio fornecido. O build instala as dependências, coleta os arquivos estáticos e executa as migrations. Planos gratuitos podem suspender a aplicação sem acessos e ter limites de armazenamento, tráfego ou duração; confirme os limites atuais do provedor antes de usar em produção.
+Antes de criar o serviço web, crie um PostgreSQL no Render e forneça sua Internal Database URL como `DATABASE_URL` ao configurar o Blueprint (`sync: false`). O `render.yaml` gera `DJANGO_SECRET_KEY` e configura `DJANGO_DEBUG=False`; o serviço recebe o host Render automaticamente. Para domínio personalizado, inclua o domínio em `DJANGO_ALLOWED_HOSTS` e sua origem HTTPS em `DJANGO_CSRF_TRUSTED_ORIGINS`, separados por vírgulas. O build instala as dependências, coleta os arquivos estáticos e executa as migrations.
 
 O deploy executa migrations, mas não importa as planilhas. Uma base de produção nova começa sem registros de equipamentos, hospedagens ou licenças; importe somente dados reais depois do deploy. O SQLite local, arquivos `.env` e planilhas não devem ser enviados ao repositório.
 
@@ -94,3 +94,4 @@ Para criar o primeiro usuário após o deploy, execute no Shell do provedor:
 ```bash
 python manage.py createsuperuser
 ```
+
