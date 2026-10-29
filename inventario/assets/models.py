@@ -70,3 +70,74 @@ class Asset(models.Model):
             return "Não informada"
         years, months = divmod(self.age_months, 12)
         return f"{years}a {months}m"
+
+
+class HostingService(models.Model):
+    """Registra domínio, hospedagem e renovação como ativo não físico."""
+
+    domain = models.CharField("domínio", max_length=255)
+    site = models.CharField("site / situação", max_length=255, blank=True)
+    provider = models.CharField("serviço / provedor", max_length=120)
+    management_url = models.URLField("link de gerenciamento", max_length=500, blank=True)
+    renewal_date = models.DateField("vencimento", null=True, blank=True)
+    renewal_note = models.CharField("informação de vencimento", max_length=80, blank=True)
+    cost = models.DecimalField("valor", max_digits=12, decimal_places=2, null=True, blank=True)
+    cost_label = models.CharField("valor original da planilha", max_length=80, blank=True)
+    billing_cycle = models.CharField("ciclo da assinatura", max_length=80, blank=True)
+    notes = models.TextField("observações", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["domain", "provider", "renewal_date"]
+        verbose_name = "hospedagem / domínio"
+        verbose_name_plural = "hospedagens e domínios"
+
+    def __str__(self):
+        return f"{self.domain} - {self.provider}"
+
+    @property
+    def renewal_display(self):
+        if self.renewal_date:
+            return self.renewal_date.strftime("%d/%m/%Y")
+        return self.renewal_note or "Não informado"
+
+    @property
+    def cost_display(self):
+        if self.cost_label:
+            return self.cost_label
+        if self.cost is None:
+            return "Não informado"
+        return f"R$ {self.cost:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+    @property
+    def status_label(self):
+        today = timezone.localdate()
+        if "inativo" in self.site.casefold():
+            return "Inativo"
+        if "expirado" in self.renewal_note.casefold() or "expirado" in self.billing_cycle.casefold():
+            return "Expirado"
+        if not self.renewal_date:
+            return "Sem vencimento"
+        if self.renewal_date < today:
+            return "Vencido"
+        if (self.renewal_date - today).days <= 30:
+            return "Vence em até 30 dias"
+        return "Ativo"
+
+
+class OfficeLicense(models.Model):
+    """Registra as licenças Office com os quatro campos selecionados da planilha."""
+
+    version = models.CharField("VERSÃO", max_length=255)
+    key = models.TextField("Key", blank=True)
+    company = models.CharField("EMPRESA", max_length=255, blank=True)
+    user = models.CharField("USUÁRIO", max_length=255, blank=True)
+
+    class Meta:
+        ordering = ["version", "company", "user"]
+        verbose_name = "licença Office"
+        verbose_name_plural = "licenças Office"
+
+    def __str__(self):
+        return f"{self.version} - {self.company or self.user or 'Sem atribuição'}"

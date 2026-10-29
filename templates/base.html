@@ -6,15 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Inventário{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <link rel="stylesheet" href="{% static 'css/search.css' %}">
+  <link rel="stylesheet" href="{% static 'css/hosting-extra.css' %}">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="{% url 'assets:dashboard' %}"><span class="brand-mark">I</span><span>Inventário<span class="brand-muted"> / TI</span></span></a>
-    <div class="top-actions">
-      <span class="logged-user">{{ request.user.get_username }}</span>
-      <a class="button button-primary" href="{% url 'assets:create' %}">+ Novo ativo</a>
-      <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="button button-light" type="submit">Sair</button></form>
-    </div>
+    <nav class="top-actions"><a class="button button-light" href="{% url 'assets:dashboard' %}">Equipamentos</a><a class="button button-light" href="{% url 'assets:hosting-list' %}">Hospedagens</a><a class="button button-light" href="{% url 'assets:office-license-list' %}">Licenças</a><a class="button button-primary" href="{% url 'assets:create' %}">+ Novo ativo</a><form method="post" action="{% url 'assets:logout' %}">{% csrf_token %}<button class="button button-light" type="submit">Sair</button></form></nav>
   </header>
   <main class="container">
     {% if messages %}{% for message in messages %}<div class="message">{{ message }}</div>{% endfor %}{% endif %}

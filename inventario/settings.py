@@ -13,6 +13,11 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host.strip()]
 
+# Em produção, DATABASE_URL deve apontar para o PostgreSQL hospedado.
+# Sem ela, o fallback localhost só funciona no computador de desenvolvimento.
+if not DEBUG and not os.getenv("DATABASE_URL"):
+    raise RuntimeError("DATABASE_URL precisa ser configurada quando DJANGO_DEBUG=False.")
+
 # Cada app instalado pode fornecer modelos, views, comandos e arquivos administrativos.
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -64,7 +69,9 @@ DATABASES = {
 }
 # SQLite facilita o desenvolvimento local; em homologação/produção o padrão é PostgreSQL.
 if os.getenv("USE_SQLITE", "False").lower() == "true":
-    DATABASES["default"] = {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
+    sqlite_path = Path(os.getenv("SQLITE_PATH", BASE_DIR / "data" / "inventario.sqlite3"))
+    sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+    DATABASES["default"] = {"ENGINE": "django.db.backends.sqlite3", "NAME": sqlite_path}
 
 LANGUAGE_CODE = "pt-br"
 # Plataformas de hospedagem normalmente entregam o PostgreSQL em DATABASE_URL.
@@ -81,8 +88,6 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# Rotas usadas pelo LoginRequiredMixin/decorator e pelo redirecionamento após login.
-LOGIN_URL = "login"
+LOGIN_URL = "assets:login"
 LOGIN_REDIRECT_URL = "assets:dashboard"
-LOGOUT_REDIRECT_URL = "login"
+LOGOUT_REDIRECT_URL = "assets:login"

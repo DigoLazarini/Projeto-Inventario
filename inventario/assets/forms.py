@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Asset
+from .models import Asset, HostingService
 
 
 class AssetForm(forms.ModelForm):
@@ -18,4 +18,20 @@ class AssetForm(forms.ModelForm):
             "warranty_date": forms.DateInput(attrs={"type": "date"}),
             "notes": forms.Textarea(attrs={"rows": 3}),
             "xsolutions": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
+class HostingServiceForm(forms.ModelForm):
+    """Formulário para cadastrar ou atualizar domínio e hospedagem."""
+
+    class Meta:
+        model = HostingService
+        fields = [
+            "domain", "site", "provider", "management_url", "renewal_date",
+            "renewal_note", "cost", "billing_cycle", "notes",
+        ]
+        widgets = {
+            "renewal_date": forms.DateInput(attrs={"type": "date"}),
+            "cost": forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
+            "notes": forms.Textarea(attrs={"rows": 4}),
         }
