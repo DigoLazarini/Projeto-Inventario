@@ -9,9 +9,26 @@ load_dotenv(BASE_DIR / ".env")
 
 # Configurações de ambiente ficam fora do código para facilitar diferentes ambientes.
 # O valor real deve ficar no arquivo .env e nunca ser versionado.
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:  # fallback somente para desenvolvimento local
+        SECRET_KEY = "dev-only-change-me"
+    else:
+        raise RuntimeError("DJANGO_SECRET_KEY precisa ser configurada em produção.")
 ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if host.strip()]
+render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if render_hostname and render_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_hostname)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+if render_hostname:
+    render_origin = f"https://{render_hostname}"
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
 
 # Em produção, DATABASE_URL deve apontar para o PostgreSQL hospedado.
 # Sem ela, o fallback localhost só funciona no computador de desenvolvimento.
@@ -80,7 +97,7 @@ if os.getenv("DATABASE_URL"):
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
@@ -91,3 +108,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "assets:login"
 LOGIN_REDIRECT_URL = "assets:dashboard"
 LOGOUT_REDIRECT_URL = "assets:login"
+
+if not DEBUG:
+    # Render termina TLS na borda e encaminha HTTP ao processo Django.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+
